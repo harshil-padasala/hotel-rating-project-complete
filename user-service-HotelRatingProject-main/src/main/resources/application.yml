@@ -1,0 +1,74 @@
+server:
+  port: 8081
+spring:
+#  application:
+#    name: USER-SERVICE
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: root
+    url: jdbc:mysql://localhost:3306/microservices
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  config:
+    import: configserver:http://localhost:8085
+
+#eureka:
+#  client:
+#    register-with-eureka: true
+#    fetch-registry: true
+#    service-url:
+#      defaultZone: http://localhost:8761/eureka
+#  instance:
+#    prefer-ip-address: true
+
+# actuator configuration for displaying endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  health:
+    circuitbreakers:
+      enabled: true
+
+  endpoint:
+    health:
+      show-details: always
+
+# resilience4j Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      RATING_HOTEL_SERVICE_CIRCUIT_BREAKER:
+#        How your circuit breaker should behave
+
+#        what is the status of circuit breaker
+        register-health-indicator: true
+        event-consumer-buffer-size: 10
+        failure-rate-threshold: 50
+        minimum-number-of-calls: 5
+        automatic-transition-from-open-to-half-open-enabled: true
+        wait-duration-in-open-state: 5s
+        permitted-number-of-calls-in-half-open-state: 3
+        sliding-window-size: 10
+        sliding-window-type: count_based
+
+  retry:
+    instances:
+      RATING_HOTEL_SERVICE_RETRY:
+#        How your retry functionality work
+        max-attempts: 4
+        wait-duration: 5s
+
+  ratelimiter:
+    instances:
+      RATING_HOTEL_SERVICE_RATE_LIMITER:
+        limit-refresh-period: 10s
+        limit-for-period: 5
+        timeout-duration: 3s
